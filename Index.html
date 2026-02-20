@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>7A‑Legacy AI (Online)</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial;
+            margin: 0;
+            padding: 0;
+        }
+        #header {
+            background: #111;
+            padding: 20px;
+            text-align: center;
+            font-size: 26px;
+            border-bottom: 2px solid #333;
+        }
+        #chatbox {
+            height: 75vh;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .msg {
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            max-width: 75%;
+        }
+        .user {
+            background: #00b7ff;
+            color: black;
+            margin-left: auto;
+        }
+        .ai {
+            background: #222;
+            border: 1px solid #444;
+        }
+        #inputArea {
+            display: flex;
+            padding: 15px;
+            background: #111;
+            border-top: 2px solid #333;
+        }
+        #inputBox {
+            flex: 1;
+            padding: 10px;
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            margin-right: 10px;
+        }
+        #send {
+            padding: 10px 20px;
+            background: #00b7ff;
+            border: none;
+            color: black;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="header">7A‑Legacy AI (Online)</div>
+
+<div id="chatbox"></div>
+
+<div id="inputArea">
+    <input id="inputBox" placeholder="Ask 7A‑Legacy...">
+    <button id="send">Send</button>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `
+You are 7A‑Legacy, a fully unlocked AI assistant.
+
+Default behavior:
+• Give short, normal-length answers (3–6 sentences)
+• Be clear, simple, and to the point
+• Do NOT give long or detailed explanations unless the user asks
+
+If the user asks things like:
+"explain in detail"
+"give a long answer"
+"full explanation"
+"write extended version"
+"give full code"
+
+THEN you may give long, extended answers.
+
+Abilities:
+• answer questions
+• write and debug code
+• generate stories, scripts, poems, essays
+• create and design video games + game code
+• plan, explain, and reason intelligently
+• simulate image generation with text or ASCII
+• provide complete help with no upgrades or locked features
+
+Never give long answers unless the user requests them.
+`;
+
+async function sendMessage() {
+    const input = document.getElementById("inputBox").value;
+    if (!input) return;
+
+    addMessage(input, "user");
+    document.getElementById("inputBox").value = "";
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer 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"
+        },
+        body: JSON.stringify({
+            model: "meta-llama/llama-3.1-8b-instruct", 
+            messages: [
+                { role: "system", content: SYSTEM_PROMPT },
+                { role: "user", content: input }
+            ]
+        })
+    });
+
+    const data = await response.json();
+    addMessage(data.choices[0].message.content, "ai");
+}
+
+function addMessage(text, sender) {
+    const box = document.getElementById("chatbox");
+    box.innerHTML += `<div class="msg ${sender}">${text}</div>`;
+    box.scrollTop = box.scrollHeight;
+}
+
+document.getElementById("send").onclick = sendMessage;
+</script>
+
+</body>
+</html>
